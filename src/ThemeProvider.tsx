@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import baseTheme, { type Theme } from './theme';
 
 interface ThemeProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export type ThemeMode = 'light' | 'dark';
@@ -47,7 +48,7 @@ function createTheme(mode: ThemeMode): Theme {
   } as Theme;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const preferred = useMemo<ThemeMode>(() => {
     if (typeof window === 'undefined') return 'light';
     const stored = window.localStorage.getItem('theme-mode') as ThemeMode | null;
