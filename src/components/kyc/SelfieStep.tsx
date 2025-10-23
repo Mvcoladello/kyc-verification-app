@@ -16,43 +16,106 @@ export const SelfieStep = ({ onBack, onNext }: SelfieStepProps) => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Encapsula parada da câmera
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop());
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setStream(null);
+    setIsCapturing(false);
+  };
 
   useEffect(() => {
     return () => {
-      // cleanup stream when leaving step
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
-      }
+      // cleanup stream quando saindo do passo
+      stopCamera();
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
-  }, [stream]);
+  }, [stream, previewUrl]);
 
   const startCamera = async () => {
+    // Verifica suporte
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError('Câmera não suportada neste dispositivo/navegador. Use o upload de arquivo.');
+      return;
+    }
+
     try {
+      setIsStarting(true);
       setCameraError(null);
-      const s = await navigator.mediaDevices.getUserMedia({ video: true });
+
+      // Tenta usar câmera frontal
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        } as MediaTrackConstraints,
+        audio: false,
+      };
+
+      // Se já existir um stream anterior, encerra
+      stopCamera();
+
+      const s = await navigator.mediaDevices.getUserMedia(constraints);
       setStream(s);
       setIsCapturing(true);
+
       if (videoRef.current) {
         videoRef.current.srcObject = s;
-        await videoRef.current.play();
+        try {
+          await videoRef.current.play();
+        } catch (err) {
+          // Alguns browsers podem bloquear autoplay; o botão de captura só aparece após play
+        }
       }
-    } catch (e) {
-      setCameraError('Não foi possível acessar a câmera. Permita o acesso ou use o upload de arquivo.');
+    } catch (e: any) {
+      if (e?.name === 'NotAllowedError') {
+        setCameraError('Permissão da câmera negada. Autorize o acesso ou use o upload de arquivo.');
+      } else if (e?.name === 'NotFoundError') {
+        setCameraError('Nenhuma câmera foi encontrada. Conecte uma câmera ou use o upload.');
+      } else {
+        setCameraError('Não foi possível acessar a câmera. Permita o acesso ou use o upload de arquivo.');
+      }
+      setIsCapturing(false);
+    } finally {
+      setIsStarting(false);
     }
   };
 
   const capturePhoto = async () => {
     if (!videoRef.current) return;
     const video = videoRef.current;
+
+    // Garante que dimensões do vídeo estejam disponíveis
+    const w = video.videoWidth || 1280;
+    const h = video.videoHeight || 720;
+
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const blob: Blob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b as Blob), 'image/jpeg', 0.9));
+
+    ctx.drawImage(video, 0, 0, w, h);
+    const blob: Blob = await new Promise((resolve) =>
+      canvas.toBlob((b) => resolve((b as Blob) ?? new Blob()), 'image/jpeg', 0.9)
+    );
+
     const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
     setValue('selfie', file, { shouldValidate: true });
+
+    // Mostra prévia e encerra a câmera
+    const url = URL.createObjectURL(file);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(url);
+    stopCamera();
   };
 
   return (
@@ -86,15 +149,51 @@ export const SelfieStep = ({ onBack, onNext }: SelfieStepProps) => {
             )}
           />
 
+          {/* Pré-visualização após captura pela câmera */}
+          {previewUrl && (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <img src={previewUrl} alt="Pré-visualização da selfie" style={{ width: '100%', borderRadius: 8 }} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setPreviewUrl(null);
+                    startCamera();
+                  }}
+                >
+                  Tirar outra foto
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'grid', gap: 8 }}>
             {!isCapturing ? (
-              <Button type="button" variant="secondary" onClick={startCamera}>Usar câmera</Button>
+              <Button type="button" variant="secondary" onClick={startCamera} disabled={isStarting}>
+                {isStarting ? 'Abrindo câmera…' : 'Usar câmera'}
+              </Button>
             ) : (
               <div style={{ display: 'grid', gap: 8 }}>
-                <video ref={videoRef} style={{ width: '100%', borderRadius: 8 }} playsInline muted aria-label="Pré-visualização da câmera" />
+                <video
+                  ref={videoRef}
+                  style={{ width: '100%', borderRadius: 8 }}
+                  playsInline
+                  muted
+                  autoPlay
+                  aria-label="Pré-visualização da câmera"
+                />
                 <div style={{ display: 'flex', gap: 8 }}>
                   <Button type="button" onClick={capturePhoto}>Capturar foto</Button>
-                  <Button type="button" variant="secondary" onClick={() => { stream?.getTracks().forEach((t) => t.stop()); setStream(null); setIsCapturing(false); }}>Fechar câmera</Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      stopCamera();
+                    }}
+                  >
+                    Fechar câmera
+                  </Button>
                 </div>
                 {cameraError && (
                   <Typography variant="body2" color="textSecondary">{cameraError}</Typography>
