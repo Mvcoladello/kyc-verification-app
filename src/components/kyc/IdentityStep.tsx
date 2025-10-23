@@ -4,7 +4,6 @@ import { Select } from '../ui/Select';
 import { FileUpload } from '../ui/FileUpload';
 import { Button } from '../ui/Button';
 import { Controller, useFormContext } from 'react-hook-form';
-import type { DocumentInfo } from '../../hooks/useFormValidation';
 
 const documentTypeOptions = [
   { value: 'rg', label: 'RG' },
@@ -25,8 +24,7 @@ export interface IdentityStepProps {
 }
 
 export const IdentityStep = ({ onBack, onNext }: IdentityStepProps) => {
-  const { register, formState: { errors }, setValue, watch, trigger, control } = useFormContext();
-  const values = watch();
+  const { register, formState: { errors }, trigger, control } = useFormContext();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,28 +39,47 @@ export const IdentityStep = ({ onBack, onNext }: IdentityStepProps) => {
         <Card.Description>Informe os dados do documento e faça o upload</Card.Description>
       </Card.Header>
       <Card.Content>
-        <Select
-          label="Tipo de documento"
-          options={documentTypeOptions}
-          value={(values as any)?.documentType || ''}
-          onChange={(e) => setValue('documentType', e.target.value as DocumentInfo['documentType'], { shouldValidate: true })}
-          fullWidth
-          error={(errors as any)?.documentType?.message}
+        {/* Tipo de documento controlado por RHF */}
+        <Controller
+          name="documentType"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Select
+              label="Tipo de documento"
+              options={documentTypeOptions}
+              value={(field.value as string) ?? ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              fullWidth
+              error={fieldState.error?.message}
+              placeholder="Selecione"
+            />
+          )}
         />
+        
         <Input
           label="Número do documento"
           {...register('documentNumber')}
           error={(errors as any)?.documentNumber?.message}
           fullWidth
         />
-        <Select
-          label="País emissor"
-          options={issuingCountryOptions}
-          value={(values as any)?.issuingCountry || ''}
-          onChange={(e) => setValue('issuingCountry', e.target.value, { shouldValidate: true })}
-          fullWidth
-          error={(errors as any)?.issuingCountry?.message}
+
+        {/* País emissor controlado por RHF */}
+        <Controller
+          name="issuingCountry"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Select
+              label="País emissor"
+              options={issuingCountryOptions}
+              value={(field.value as string) ?? ''}
+              onChange={(e) => field.onChange(e.target.value)}
+              fullWidth
+              error={fieldState.error?.message}
+              placeholder="Selecione"
+            />
+          )}
         />
+
         <Controller
           name="documentFront"
           control={control}
