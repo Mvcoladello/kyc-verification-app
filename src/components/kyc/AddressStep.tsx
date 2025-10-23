@@ -2,8 +2,7 @@ import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
-import type { AddressInfo } from '../../hooks/useFormValidation';
-import { useFormValidation } from '../../hooks/useFormValidation';
+import { useFormContext } from 'react-hook-form';
 
 const countryOptions = [
   { value: 'br', label: 'Brasil' },
@@ -13,21 +12,22 @@ const countryOptions = [
 ];
 
 export interface AddressStepProps {
-  initialValues?: Partial<AddressInfo>;
   onBack?: () => void;
-  onNext?: (values: AddressInfo) => void;
+  onNext?: () => void;
 }
 
-export const AddressStep = ({ initialValues, onBack, onNext }: AddressStepProps) => {
-  const { methods } = useFormValidation('address', { defaultValues: initialValues });
-  const { handleSubmit, register, formState: { errors }, setValue, watch } = methods;
-
+export const AddressStep = ({ onBack, onNext }: AddressStepProps) => {
+  const { register, formState: { errors }, setValue, watch, trigger } = useFormContext();
   const values = watch();
 
-  const onSubmit = (vals: AddressInfo) => onNext?.(vals);
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const ok = await trigger(['country', 'zipCode', 'state', 'city', 'street', 'number', 'complement']);
+    if (ok) onNext?.();
+  };
 
   return (
-    <Card variant="elevated" padding="large" as="form" onSubmit={handleSubmit(onSubmit)}>
+    <Card variant="elevated" padding="large" as="form" onSubmit={onSubmit}>
       <Card.Header>
         <Card.Title>Endereço</Card.Title>
         <Card.Description>Informe seu endereço de residência</Card.Description>
@@ -37,46 +37,46 @@ export const AddressStep = ({ initialValues, onBack, onNext }: AddressStepProps)
           label="País"
           placeholder="Selecione um país"
           options={countryOptions}
-          value={values.country}
+          value={(values as any)?.country || ''}
           onChange={(e) => setValue('country', e.target.value, { shouldValidate: true })}
           fullWidth
-          error={errors.country?.message}
+          error={(errors as any)?.country?.message}
         />
         <Input
           label="CEP"
           placeholder="00000-000"
           {...register('zipCode')}
-          error={errors.zipCode?.message}
+          error={(errors as any)?.zipCode?.message}
           fullWidth
         />
         <Input
           label="Estado"
           {...register('state')}
-          error={errors.state?.message}
+          error={(errors as any)?.state?.message}
           fullWidth
         />
         <Input
           label="Cidade"
           {...register('city')}
-          error={errors.city?.message}
+          error={(errors as any)?.city?.message}
           fullWidth
         />
         <Input
           label="Endereço"
           {...register('street')}
-          error={errors.street?.message}
+          error={(errors as any)?.street?.message}
           fullWidth
         />
         <Input
           label="Número"
           {...register('number')}
-          error={errors.number?.message}
+          error={(errors as any)?.number?.message}
           fullWidth
         />
         <Input
           label="Complemento"
           {...register('complement')}
-          error={errors.complement?.message}
+          error={(errors as any)?.complement?.message}
           fullWidth
         />
       </Card.Content>

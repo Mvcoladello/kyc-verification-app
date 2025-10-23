@@ -1,22 +1,23 @@
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import type { PersonalInfo } from '../../hooks/useFormValidation';
-import { useFormValidation } from '../../hooks/useFormValidation';
+import { useFormContext } from 'react-hook-form';
 
 export interface PersonalInfoStepProps {
-  initialValues?: Partial<PersonalInfo>;
-  onNext?: (values: PersonalInfo) => void;
+  onNext?: () => void;
 }
 
-export const PersonalInfoStep = ({ initialValues, onNext }: PersonalInfoStepProps) => {
-  const { methods } = useFormValidation('personal', { defaultValues: initialValues });
-  const { handleSubmit, register, formState: { errors } } = methods;
+export const PersonalInfoStep = ({ onNext }: PersonalInfoStepProps) => {
+  const { register, formState: { errors }, trigger } = useFormContext();
 
-  const onSubmit = (values: PersonalInfo) => onNext?.(values);
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const ok = await trigger(['fullName', 'email', 'phone', 'cpf', 'birthDate']);
+    if (ok) onNext?.();
+  };
 
   return (
-    <Card variant="elevated" padding="large" as="form" onSubmit={handleSubmit(onSubmit)}>
+    <Card variant="elevated" padding="large" as="form" onSubmit={onSubmit}>
       <Card.Header>
         <Card.Title>Dados Pessoais</Card.Title>
         <Card.Description>Preencha seus dados básicos</Card.Description>
@@ -26,7 +27,7 @@ export const PersonalInfoStep = ({ initialValues, onNext }: PersonalInfoStepProp
           label="Nome completo"
           placeholder="Seu nome"
           {...register('fullName')}
-          error={errors.fullName?.message}
+          error={(errors as any)?.fullName?.message}
           fullWidth
         />
         <Input
@@ -34,28 +35,28 @@ export const PersonalInfoStep = ({ initialValues, onNext }: PersonalInfoStepProp
           type="email"
           placeholder="seu@email.com"
           {...register('email')}
-          error={errors.email?.message}
+          error={(errors as any)?.email?.message}
           fullWidth
         />
         <Input
           label="Telefone"
           placeholder="(00) 00000-0000"
           {...register('phone')}
-          error={errors.phone?.message}
+          error={(errors as any)?.phone?.message}
           fullWidth
         />
         <Input
           label="CPF"
           placeholder="000.000.000-00"
           {...register('cpf')}
-          error={errors.cpf?.message}
+          error={(errors as any)?.cpf?.message}
           fullWidth
         />
         <Input
           label="Data de nascimento"
           type="date"
           {...register('birthDate')}
-          error={errors.birthDate?.message}
+          error={(errors as any)?.birthDate?.message}
           fullWidth
         />
       </Card.Content>

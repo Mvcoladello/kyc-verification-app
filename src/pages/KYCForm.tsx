@@ -8,6 +8,7 @@ import { SelfieStep } from '../components/kyc/SelfieStep';
 import { ReviewStep } from '../components/kyc/ReviewStep';
 import { useMultiStepForm, type StepConfig } from '../hooks/useMultiStepForm';
 import type { PersonalInfo, AddressInfo, DocumentInfo } from '../hooks/useFormValidation';
+import { FormProvider, useForm } from 'react-hook-form';
 
 const Wrapper = styled.div`
   max-width: 760px;
@@ -15,11 +16,7 @@ const Wrapper = styled.div`
   padding: ${({ theme }) => theme.spacing[8]} ${({ theme }) => theme.spacing[4]};
 `;
 
-export type KycData = {
-  personal: PersonalInfo;
-  address: AddressInfo;
-  document: DocumentInfo & { fileFront?: File | null; fileBack?: File | null };
-};
+export type FormValues = PersonalInfo & AddressInfo & DocumentInfo;
 
 const stepsConfig: StepConfig[] = [
   { id: 'personal', title: 'Dados Pessoais' },
@@ -30,14 +27,16 @@ const stepsConfig: StepConfig[] = [
 ];
 
 export const KYCForm = () => {
-  const [data, setData] = useState<Partial<KycData>>({});
+  const methods = useForm<FormValues>({ mode: 'onChange', reValidateMode: 'onChange' });
+  const { getValues } = methods;
 
   const { currentStep, nextStep, prevStep, progress } = useMultiStepForm(stepsConfig);
 
-  const handleNext = (values: any) => {
-    if (currentStep.id === 'personal') setData((d) => ({ ...d, personal: values }));
-    if (currentStep.id === 'address') setData((d) => ({ ...d, address: values }));
-    if (currentStep.id === 'document') setData((d) => ({ ...d, document: values }));
+  // Persist files across navigation
+  const [fileFront, setFileFront] = useState<File | null>(null);
+  const [fileBack, setFileBack] = useState<File | null>(null);
+
+  const handleNext = () => {
     nextStep();
   };
 
@@ -45,40 +44,39 @@ export const KYCForm = () => {
     switch (currentStep.id) {
       case 'personal':
         return (
-          <PersonalInfoStep
-            initialValues={data.personal}
-            onNext={(v) => handleNext(v)}
-          />
+          <PersonalInfoStep onNext={handleNext as any} />
         );
       case 'address':
         return (
-          <AddressStep
-            initialValues={data.address}
-            onBack={prevStep}
-            onNext={(v) => handleNext(v)}
-          />
+          <AddressStep onBack={prevStep} onNext={handleNext as any} />
         );
       case 'document':
         return (
           <IdentityStep
-            initialValues={data.document}
             onBack={prevStep}
-            onNext={(v) => handleNext(v)}
+            onNext={handleNext as any}
+            fileFront={fileFront}
+            fileBack={fileBack}
+            setFileFront={setFileFront}
+            setFileBack={setFileBack}
           />
         );
       case 'selfie':
         return <SelfieStep onBack={prevStep} onNext={nextStep} />;
-      case 'review':
+      case 'review': {
+        const current = getValues();
         return (
           <ReviewStep
-            data={data as any}
+            data={{ personal: current, address: current, document: { ...current, fileFront, fileBack } }}
             onBack={prevStep}
             onSubmit={() => {
-              console.log('Submitting KYC data', data);
+              const values = getValues();
+              console.log('Submitting KYC data', { ...values, fileFront, fileBack });
               alert('KYC enviado!');
             }}
           />
         );
+      }
       default:
         return null;
     }
@@ -90,7 +88,9 @@ export const KYCForm = () => {
       <Card padding="small" style={{ marginBottom: 16 }}>
         <Typography variant="body2" color="textSecondary">Progresso: {progress}%</Typography>
       </Card>
-      {renderStep()}
+      <FormProvider {...methods}>
+        {renderStep()}
+      </FormProvider>
     </Wrapper>
   );
 };
