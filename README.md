@@ -1,73 +1,68 @@
-# React + TypeScript + Vite
+# KYC Verification App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Formulário multi-etapas (KYC) com React, TypeScript e styled-components. Inclui validação com Zod, upload de arquivos, toasts de feedback, Stepper e Dark Mode.
 
-Currently, two official plugins are available:
+- Demo: https://your-demo-url.example.com
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Decisões técnicas
+- Vite + React: desenvolvimento rápido, HMR e build eficiente.
+- React Hook Form + Zod: validação robusta e tipada end-to-end (schema-first).
+- styled-components: isolamento de estilos e design tokens centralizados (tema).
+- Arquitetura por features: componentes de UI reutilizáveis e passos do KYC desacoplados.
+- Vitest (opcional): preparado para testes unitários com RTL.
 
-## React Compiler
+## Bibliotecas
+- react, react-dom: base do app.
+- react-hook-form, @hookform/resolvers: formulários performáticos integrados ao Zod.
+- zod: schema e validação tipada.
+- styled-components: sistema de temas e componentes estilizados.
+- vite: bundler e servidor de dev.
+- storybook (opcional): documentação visual de UI e testes visuais.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Como rodar
+1. Instale dependências
+   - npm: npm install
+   - pnpm: pnpm install
+   - yarn: yarn
+2. Ambiente de desenvolvimento
+   - npm run dev
+3. Build de produção
+   - npm run build
+4. Preview do build
+   - npm run preview
+5. Storybook (opcional)
+   - npm run storybook
 
-## Expanding the ESLint configuration
+## Dark Mode
+- Toggle no topo da página (ThemeToggle) alterna entre temas claro/escuro.
+- O tema escuro reaproveita os tokens invertendo a escala neutral, preservando contrastes.
+- Preferência é persistida em localStorage e respeita prefers-color-scheme.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Estrutura
+- src/components/ui: Biblioteca de UI (Button, Card, Input, Select, Stepper, Toast, Typography, ThemeToggle).
+- src/components/kyc: Passos do formulário (dados pessoais, endereço, documento, selfie, revisão).
+- src/hooks: Hooks (useMultiStepForm, validação, upload, tema).
+- src/theme.ts: design tokens.
+- src/ThemeProvider.tsx: provider de tema com modo claro/escuro.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Testes (Nice to have)
+- Setup com Vitest + @testing-library/react (exemplo incluído em tests/).
+- Alvo sugerido: useMultiStepForm e validações do formulário.
+- Rodar: npm run test (se adicionado ao package.json).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Tempo gasto
+- Implementação principal: ~6-8h
+- Polimento e dark mode: ~1h
+- Documentação e ajustes: ~30min
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Desafios
+- Tipagens do zod/resolvers com react-hook-form em versões recentes (resolvido com casting controlado em pontos específicos).
+- Upload de arquivos com validação de tamanho e tipo mantido simples e confiável.
+- Acessibilidade básica (aria- atributos) nos componentes.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Melhorias futuras
+- Testes unitários e e2e mais completos.
+- Máscaras e autoformatação (CEP/CPF/telefone) com libs de mask.
+- Persistência de progresso (localStorage) e retomada.
+- Integração real com API e telas de status.
+- Internacionalização (i18n).

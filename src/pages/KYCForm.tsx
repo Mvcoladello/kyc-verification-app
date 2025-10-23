@@ -26,6 +26,14 @@ const Wrapper = styled.div`
   }
 `;
 
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing[3]};
+  margin-bottom: ${({ theme }) => theme.spacing[2]};
+`;
+
 export type FormValues = PersonalInfo & AddressInfo & DocumentInfo;
 
 const stepsConfig: StepConfig[] = [
@@ -114,7 +122,9 @@ export const KYCForm = () => {
 
   return (
     <Wrapper>
-      <Typography variant="h2" style={{ marginBottom: 8 }}>KYC - Verificação de Identidade</Typography>
+      <HeaderRow>
+        <Typography variant="h2" style={{ marginBottom: 8 }}>KYC - Verificação de Identidade</Typography>
+      </HeaderRow>
       <Stepper
         steps={stepsConfig.map((s) => ({ id: s.id, label: s.title || String(s.id) }))}
         activeIndex={currentStepIndex}

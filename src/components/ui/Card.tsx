@@ -17,6 +17,7 @@ const StyledCard = styled.div<{
   background-color: ${({ theme }) => theme.colors.neutral[100]};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   transition: ${({ theme }) => theme.transitions.all};
+  color: ${({ theme }) => theme.colors.neutral[900]};
 
   ${({ $padding, theme }) => {
     switch ($padding) {

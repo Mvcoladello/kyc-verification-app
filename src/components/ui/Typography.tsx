@@ -1,1 +1,197 @@
-import styled, { css, type DefaultTheme } from 'styled-components';import type { HTMLAttributes, ReactNode, ElementType } from 'react';type TypographyVariant =  | 'h1'  | 'h2'  | 'h3'  | 'h4'  | 'h5'  | 'h6'  | 'body1'  | 'body2'  | 'caption'  | 'label';type TypographyColor = 'primary' | 'secondary' | 'error' | 'success' | 'text' | 'textSecondary';type TypographyAlign = 'left' | 'center' | 'right' | 'justify';interface TypographyProps extends HTMLAttributes<HTMLElement> {  variant?: TypographyVariant;  color?: TypographyColor;  align?: TypographyAlign;  weight?: 'normal' | 'medium' | 'semibold' | 'bold';  gutterBottom?: boolean;  noWrap?: boolean;  component?: ElementType;  children: ReactNode;}const getVariantStyles = (variant: TypographyVariant, theme: DefaultTheme) => {  switch (variant) {    case 'h1':      return css`        font-size: ${theme.typography.fontSize['2xl']};        font-weight: ${theme.typography.fontWeight.bold};        line-height: ${theme.typography.lineHeight.tight};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'h2':      return css`        font-size: ${theme.typography.fontSize.xl};        font-weight: ${theme.typography.fontWeight.bold};        line-height: ${theme.typography.lineHeight.snug};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'h3':      return css`        font-size: ${theme.typography.fontSize.lg};        font-weight: ${theme.typography.fontWeight.semibold};        line-height: ${theme.typography.lineHeight.normal};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'h4':      return css`        font-size: ${theme.typography.fontSize.base};        font-weight: ${theme.typography.fontWeight.semibold};        line-height: ${theme.typography.lineHeight.normal};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'h5':    case 'h6':      return css`        font-size: ${theme.typography.fontSize.sm};        font-weight: ${theme.typography.fontWeight.semibold};        line-height: ${theme.typography.lineHeight.normal};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'body1':      return css`        font-size: ${theme.typography.fontSize.base};        font-weight: ${theme.typography.fontWeight.normal};        line-height: ${theme.typography.lineHeight.relaxed};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'body2':      return css`        font-size: ${theme.typography.fontSize.sm};        font-weight: ${theme.typography.fontWeight.normal};        line-height: ${theme.typography.lineHeight.normal};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'caption':      return css`        font-size: ${theme.typography.fontSize.xs};        font-weight: ${theme.typography.fontWeight.normal};        line-height: ${theme.typography.lineHeight.normal};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    case 'label':      return css`        font-size: ${theme.typography.fontSize.sm};        font-weight: ${theme.typography.fontWeight.semibold};        line-height: ${theme.typography.lineHeight.normal};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;    default:      return css`        font-size: ${theme.typography.fontSize.base};        font-weight: ${theme.typography.fontWeight.normal};        line-height: ${theme.typography.lineHeight.relaxed};        font-family: ${theme.typography.fontFamily.sans.join(', ')};      `;  }};const getColorValue = (color: TypographyColor, theme: DefaultTheme): string => {  switch (color) {    case 'primary':      return theme.colors.primary[600];    case 'secondary':      return theme.colors.neutral[600];    case 'error':      return theme.colors.error[600];    case 'success':      return theme.colors.success[600];    case 'text':      return theme.colors.neutral[900];    case 'textSecondary':      return theme.colors.neutral[600];    default:      return theme.colors.neutral[900];  }};const StyledTypography = styled.div<{  $variant: TypographyVariant;  $color: TypographyColor;  $align: TypographyAlign;  $weight?: 'normal' | 'medium' | 'semibold' | 'bold';  $gutterBottom: boolean;  $noWrap: boolean;}>`  margin: 0;  padding: 0;  color: ${({ $color, theme }) => getColorValue($color, theme)};  text-align: ${({ $align }) => $align};  ${({ $variant, theme }) => getVariantStyles($variant, theme)}  ${({ $weight, theme }) =>    $weight &&    css`      font-weight: ${theme.typography.fontWeight[$weight]};    `}  ${({ $gutterBottom, theme }) =>    $gutterBottom &&    css`      margin-bottom: ${theme.spacing[4]};    `}  ${({ $noWrap }) =>    $noWrap &&    css`      overflow: hidden;      text-overflow: ellipsis;      white-space: nowrap;    `}`;const defaultVariantMapping: Record<TypographyVariant, ElementType> = {  h1: 'h1',  h2: 'h2',  h3: 'h3',  h4: 'h4',  h5: 'h5',  h6: 'h6',  body1: 'p',  body2: 'p',  caption: 'span',  label: 'label',};export const Typography = ({  variant = 'body1',  color = 'text',  align = 'left',  weight,  gutterBottom = false,  noWrap = false,  component,  children,  ...props}: TypographyProps) => {  const Component = component || defaultVariantMapping[variant] || 'div';  return (    <StyledTypography      as={Component}      $variant={variant}      $color={color}      $align={align}      $weight={weight}      $gutterBottom={gutterBottom}      $noWrap={noWrap}      {...props}    >      {children}    </StyledTypography>  );};
+import styled, { css, type DefaultTheme } from 'styled-components';
+import type { HTMLAttributes, ReactNode, ElementType } from 'react';
+
+type TypographyVariant =
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'body1'
+  | 'body2'
+  | 'caption'
+  | 'label';
+
+type TypographyColor = 'primary' | 'secondary' | 'error' | 'success' | 'text' | 'textSecondary';
+
+type TypographyAlign = 'left' | 'center' | 'right' | 'justify';
+
+interface TypographyProps extends HTMLAttributes<HTMLElement> {
+  variant?: TypographyVariant;
+  color?: TypographyColor;
+  align?: TypographyAlign;
+  weight?: 'normal' | 'medium' | 'semibold' | 'bold';
+  gutterBottom?: boolean;
+  noWrap?: boolean;
+  component?: ElementType;
+  children: ReactNode;
+}
+
+const getVariantStyles = (variant: TypographyVariant, theme: DefaultTheme) => {
+  switch (variant) {
+    case 'h1':
+      return css`
+        font-size: ${theme.typography.fontSize['2xl']};
+        font-weight: ${theme.typography.fontWeight.bold};
+        line-height: ${theme.typography.lineHeight.tight};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'h2':
+      return css`
+        font-size: ${theme.typography.fontSize.xl};
+        font-weight: ${theme.typography.fontWeight.bold};
+        line-height: ${theme.typography.lineHeight.snug};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'h3':
+      return css`
+        font-size: ${theme.typography.fontSize.lg};
+        font-weight: ${theme.typography.fontWeight.semibold};
+        line-height: ${theme.typography.lineHeight.normal};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'h4':
+      return css`
+        font-size: ${theme.typography.fontSize.base};
+        font-weight: ${theme.typography.fontWeight.semibold};
+        line-height: ${theme.typography.lineHeight.normal};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'h5':
+    case 'h6':
+      return css`
+        font-size: ${theme.typography.fontSize.sm};
+        font-weight: ${theme.typography.fontWeight.semibold};
+        line-height: ${theme.typography.lineHeight.normal};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'body1':
+      return css`
+        font-size: ${theme.typography.fontSize.base};
+        font-weight: ${theme.typography.fontWeight.normal};
+        line-height: ${theme.typography.lineHeight.relaxed};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'body2':
+      return css`
+        font-size: ${theme.typography.fontSize.sm};
+        font-weight: ${theme.typography.fontWeight.normal};
+        line-height: ${theme.typography.lineHeight.normal};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'caption':
+      return css`
+        font-size: ${theme.typography.fontSize.xs};
+        font-weight: ${theme.typography.fontWeight.normal};
+        line-height: ${theme.typography.lineHeight.normal};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    case 'label':
+      return css`
+        font-size: ${theme.typography.fontSize.sm};
+        font-weight: ${theme.typography.fontWeight.semibold};
+        line-height: ${theme.typography.lineHeight.normal};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+    default:
+      return css`
+        font-size: ${theme.typography.fontSize.base};
+        font-weight: ${theme.typography.fontWeight.normal};
+        line-height: ${theme.typography.lineHeight.relaxed};
+        font-family: ${theme.typography.fontFamily.sans.join(', ')};
+      `;
+  }
+};
+
+const getColorValue = (color: TypographyColor, theme: DefaultTheme): string => {
+  switch (color) {
+    case 'primary':
+      return theme.colors.primary[600];
+    case 'secondary':
+      return theme.colors.neutral[600];
+    case 'error':
+      return theme.colors.error[600];
+    case 'success':
+      return theme.colors.success[600];
+    case 'text':
+      return theme.colors.neutral[900];
+    case 'textSecondary':
+      return theme.colors.neutral[600];
+    default:
+      return theme.colors.neutral[900];
+  }
+};
+
+const StyledTypography = styled.div<{
+  $variant: TypographyVariant;
+  $color: TypographyColor;
+  $align: TypographyAlign;
+  $weight?: 'normal' | 'medium' | 'semibold' | 'bold';
+  $gutterBottom: boolean;
+  $noWrap: boolean;
+}>`
+  margin: 0;
+  padding: 0;
+  color: ${({ $color, theme }) => getColorValue($color, theme)};
+  text-align: ${({ $align }) => $align};
+  ${({ $variant, theme }) => getVariantStyles($variant, theme)}
+  ${({ $weight, theme }) =>
+    $weight &&
+    css`
+      font-weight: ${theme.typography.fontWeight[$weight]};
+    `}
+  ${({ $gutterBottom, theme }) =>
+    $gutterBottom &&
+    css`
+      margin-bottom: ${theme.spacing[4]};
+    `}
+  ${({ $noWrap }) =>
+    $noWrap &&
+    css`
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    `}
+`;
+
+const defaultVariantMapping: Record<TypographyVariant, ElementType> = {
+  h1: 'h1',
+  h2: 'h2',
+  h3: 'h3',
+  h4: 'h4',
+  h5: 'h5',
+  h6: 'h6',
+  body1: 'p',
+  body2: 'p',
+  caption: 'span',
+  label: 'label',
+};
+
+export const Typography = ({
+  variant = 'body1',
+  color = 'text',
+  align = 'left',
+  weight,
+  gutterBottom = false,
+  noWrap = false,
+  component,
+  children,
+  ...props
+}: TypographyProps) => {
+  const Component = component || defaultVariantMapping[variant] || 'div';
+  return (
+    <StyledTypography
+      as={Component}
+      $variant={variant}
+      $color={color}
+      $align={align}
+      $weight={weight}
+      $gutterBottom={gutterBottom}
+      $noWrap={noWrap}
+      {...props}
+    >
+      {children}
+    </StyledTypography>
+  );
+};

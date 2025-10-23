@@ -1,1 +1,182 @@
-import styled, { css } from 'styled-components';import type { SelectHTMLAttributes } from 'react';import { forwardRef, useState } from 'react';export interface SelectOption {  value: string;  label: string;  disabled?: boolean;}interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {  label?: string;  error?: string;  helperText?: string;  fullWidth?: boolean;  options: SelectOption[];  placeholder?: string;}const SelectWrapper = styled.div<{ $fullWidth: boolean }>`  display: flex;  flex-direction: column;  gap: ${({ theme }) => theme.spacing[2]};  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};`;const Label = styled.label`  font-size: ${({ theme }) => theme.typography.fontSize.sm};  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};  color: ${({ theme }) => theme.colors.neutral[900]};  font-family: ${({ theme }) => theme.typography.fontFamily.sans.join(', ')};`;const SelectContainer = styled.div`  position: relative;  display: flex;  align-items: center;`;const StyledSelect = styled.select<{ $hasError: boolean; $isFocused: boolean }>`  width: 100%;  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};  padding-right: ${({ theme }) => theme.spacing[8]};  font-size: ${({ theme }) => theme.typography.fontSize.base};  font-family: ${({ theme }) => theme.typography.fontFamily.sans.join(', ')};  color: ${({ theme }) => theme.colors.neutral[900]};  background-color: ${({ theme }) => theme.colors.neutral[50]};  border: 2px solid ${({ theme }) => theme.colors.neutral[300]};  border-radius: ${({ theme }) => theme.borderRadius.md};  transition: ${({ theme }) => theme.transitions.all};  min-height: 44px;  cursor: pointer;  appearance: none;  &::-ms-expand {    display: none;  }  ${({ $isFocused, theme }) =>    $isFocused &&    css`      border-color: ${theme.colors.primary[500]};      outline: none;      box-shadow: 0 0 0 3px ${theme.colors.primary[100]};    `}  ${({ $hasError, theme }) =>    $hasError &&    css`      border-color: ${theme.colors.error[500]};      &:focus {        box-shadow: 0 0 0 3px ${theme.colors.error[100]};      }    `}  &:disabled {    background-color: ${({ theme }) => theme.colors.neutral[100]};    cursor: not-allowed;    opacity: 0.6;  }  &:hover:not(:disabled):not(:focus) {    border-color: ${({ theme }) => theme.colors.primary[400]};  }  option {    padding: ${({ theme }) => theme.spacing[3]};  }`;const ChevronIcon = styled.svg`  position: absolute;  right: ${({ theme }) => theme.spacing[4]};  width: 20px;  height: 20px;  pointer-events: none;  color: ${({ theme }) => theme.colors.neutral[600]};`;const HelperText = styled.span<{ $isError: boolean }>`  font-size: ${({ theme }) => theme.typography.fontSize.sm};  color: ${({ $isError, theme }) =>    $isError ? theme.colors.error[600] : theme.colors.neutral[600]};  font-family: ${({ theme }) => theme.typography.fontFamily.sans.join(', ')};  line-height: ${({ theme }) => theme.typography.lineHeight.normal};`;export const Select = forwardRef<HTMLSelectElement, SelectProps>(  (    {      label,      error,      helperText,      fullWidth = false,      options,      placeholder,      id,      onFocus,      onBlur,      ...props    },    ref  ) => {    const [isFocused, setIsFocused] = useState(false);    const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;    const handleFocus = (e: React.FocusEvent<HTMLSelectElement>) => {      setIsFocused(true);      onFocus?.(e);    };    const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {      setIsFocused(false);      onBlur?.(e);    };    return (      <SelectWrapper $fullWidth={fullWidth}>        {label && <Label htmlFor={selectId}>{label}</Label>}        <SelectContainer>          <StyledSelect            ref={ref}            id={selectId}            $hasError={!!error}            $isFocused={isFocused}            onFocus={handleFocus}            onBlur={handleBlur}            aria-invalid={!!error}            aria-describedby={error ? `${selectId}-error` : undefined}            {...props}          >            {placeholder && (              <option value="" disabled>                {placeholder}              </option>            )}            {options.map((option) => (              <option                key={option.value}                value={option.value}                disabled={option.disabled}              >                {option.label}              </option>            ))}          </StyledSelect>          <ChevronIcon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />          </ChevronIcon>        </SelectContainer>        {error && (          <HelperText id={`${selectId}-error`} $isError role="alert">            {error}          </HelperText>        )}        {!error && helperText && (          <HelperText $isError={false}>{helperText}</HelperText>        )}      </SelectWrapper>    );  });Select.displayName = 'Select';
+import styled, { css } from 'styled-components';
+import type { SelectHTMLAttributes } from 'react';
+import { forwardRef, useState } from 'react';
+
+export interface SelectOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  error?: string;
+  helperText?: string;
+  fullWidth?: boolean;
+  options: SelectOption[];
+  placeholder?: string;
+}
+
+const SelectWrapper = styled.div<{ $fullWidth: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[2]};
+  width: ${({ $fullWidth }) => ($fullWidth ? '100%' : 'auto')};
+`;
+
+const Label = styled.label`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  color: ${({ theme }) => theme.colors.neutral[900]};
+  font-family: ${({ theme }) => theme.typography.fontFamily.sans.join(', ')};
+`;
+
+const SelectContainer = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const StyledSelect = styled.select<{ $hasError: boolean; $isFocused: boolean }>`
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+  padding-right: ${({ theme }) => theme.spacing[8]};
+  font-size: ${({ theme }) => theme.typography.fontSize.base};
+  font-family: ${({ theme }) => theme.typography.fontFamily.sans.join(', ')};
+  color: ${({ theme }) => theme.colors.neutral[900]};
+  background-color: ${({ theme }) => theme.colors.neutral[50]};
+  border: 2px solid ${({ theme }) => theme.colors.neutral[300]};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  transition: ${({ theme }) => theme.transitions.all};
+  min-height: 44px;
+  cursor: pointer;
+  appearance: none;
+
+  &::-ms-expand {
+    display: none;
+  }
+
+  ${({ $isFocused, theme }) =>
+    $isFocused &&
+    css`
+      border-color: ${theme.colors.primary[500]};
+      outline: none;
+      box-shadow: 0 0 0 3px ${theme.colors.primary[100]};
+    `}
+
+  ${({ $hasError, theme }) =>
+    $hasError &&
+    css`
+      border-color: ${theme.colors.error[500]};
+      &:focus {
+        box-shadow: 0 0 0 3px ${theme.colors.error[100]};
+      }
+    `}
+
+  &:disabled {
+    background-color: ${({ theme }) => theme.colors.neutral[100]};
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    border-color: ${({ theme }) => theme.colors.primary[400]};
+  }
+
+  option {
+    padding: ${({ theme }) => theme.spacing[3]};
+  }
+`;
+
+const ChevronIcon = styled.svg`
+  position: absolute;
+  right: ${({ theme }) => theme.spacing[4]};
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  color: ${({ theme }) => theme.colors.neutral[600]};
+`;
+
+const HelperText = styled.span<{ $isError: boolean }>`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  color: ${({ $isError, theme }) =>
+    $isError ? theme.colors.error[600] : theme.colors.neutral[600]};
+  font-family: ${({ theme }) => theme.typography.fontFamily.sans.join(', ')};
+  line-height: ${({ theme }) => theme.typography.lineHeight.normal};
+`;
+
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  (
+    {
+      label,
+      error,
+      helperText,
+      fullWidth = false,
+      options,
+      placeholder,
+      id,
+      onFocus,
+      onBlur,
+      ...props
+    },
+    ref
+  ) => {
+    const [isFocused, setIsFocused] = useState(false);
+    const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+
+    const handleFocus = (e: React.FocusEvent<HTMLSelectElement>) => {
+      setIsFocused(true);
+      onFocus?.(e);
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {
+      setIsFocused(false);
+      onBlur?.(e);
+    };
+
+    return (
+      <SelectWrapper $fullWidth={fullWidth}>
+        {label && <Label htmlFor={selectId}>{label}</Label>}
+        <SelectContainer>
+          <StyledSelect
+            ref={ref}
+            id={selectId}
+            $hasError={!!error}
+            $isFocused={isFocused}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${selectId}-error` : undefined}
+            {...props}
+          >
+            {placeholder && (
+              <option value="" disabled>
+                {placeholder}
+              </option>
+            )}
+            {options.map((option) => (
+              <option key={option.value} value={option.value} disabled={option.disabled}>
+                {option.label}
+              </option>
+            ))}
+          </StyledSelect>
+          <ChevronIcon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fillRule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </ChevronIcon>
+        </SelectContainer>
+        {error && (
+          <HelperText id={`${selectId}-error`} $isError role="alert">
+            {error}
+          </HelperText>
+        )}
+        {!error && helperText && <HelperText $isError={false}>{helperText}</HelperText>}
+      </SelectWrapper>
+    );
+  }
+);
+
+Select.displayName = 'Select';

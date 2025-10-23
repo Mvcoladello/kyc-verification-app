@@ -27,6 +27,7 @@ export const GlobalStyles = createGlobalStyle`
     background-color: ${({ theme }) => theme.colors.neutral[50]};
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: color 150ms ease, background-color 150ms ease;
   }
 
   /* Headings */
