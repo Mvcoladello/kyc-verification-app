@@ -12,9 +12,10 @@ export interface ReviewStepProps {
   data?: ReviewData;
   onBack?: () => void;
   onSubmit?: () => void;
+  submitting?: boolean;
 }
 
-export const ReviewStep = ({ data, onBack, onSubmit }: ReviewStepProps) => {
+export const ReviewStep = ({ data, onBack, onSubmit, submitting }: ReviewStepProps) => {
   return (
     <Card variant="elevated" padding="large">
       <Card.Header>
@@ -39,7 +40,9 @@ export const ReviewStep = ({ data, onBack, onSubmit }: ReviewStepProps) => {
       </Card.Content>
       <Card.Footer>
         <Button type="button" variant="secondary" onClick={onBack}>Voltar</Button>
-        <Button type="button" onClick={onSubmit}>Enviar</Button>
+        <Button type="button" onClick={onSubmit} loading={submitting} aria-busy={!!submitting} aria-live="polite">
+          {submitting ? 'Enviando...' : 'Enviar'}
+        </Button>
       </Card.Footer>
     </Card>
   );
