@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import styled from 'styled-components';
 import { Card, Typography } from '../components/ui';
 import { PersonalInfoStep } from '../components/kyc/PersonalInfoStep';
@@ -9,6 +8,8 @@ import { ReviewStep } from '../components/kyc/ReviewStep';
 import { useMultiStepForm, type StepConfig } from '../hooks/useMultiStepForm';
 import type { PersonalInfo, AddressInfo, DocumentInfo } from '../hooks/useFormValidation';
 import { FormProvider, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { fullFormSchema, type FullFormValues } from '../hooks/useFormValidation';
 
 const Wrapper = styled.div`
   max-width: 760px;
@@ -27,14 +28,14 @@ const stepsConfig: StepConfig[] = [
 ];
 
 export const KYCForm = () => {
-  const methods = useForm<FormValues>({ mode: 'onChange', reValidateMode: 'onChange' });
+  const methods = useForm<FullFormValues>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    resolver: zodResolver(fullFormSchema) as any,
+  });
   const { getValues } = methods;
 
   const { currentStep, nextStep, prevStep, progress } = useMultiStepForm(stepsConfig);
-
-  // Persist files across navigation
-  const [fileFront, setFileFront] = useState<File | null>(null);
-  const [fileBack, setFileBack] = useState<File | null>(null);
 
   const handleNext = () => {
     nextStep();
@@ -55,10 +56,6 @@ export const KYCForm = () => {
           <IdentityStep
             onBack={prevStep}
             onNext={handleNext as any}
-            fileFront={fileFront}
-            fileBack={fileBack}
-            setFileFront={setFileFront}
-            setFileBack={setFileBack}
           />
         );
       case 'selfie':
@@ -67,11 +64,19 @@ export const KYCForm = () => {
         const current = getValues();
         return (
           <ReviewStep
-            data={{ personal: current, address: current, document: { ...current, fileFront, fileBack } }}
+            data={{
+              personal: current,
+              address: current,
+              document: { ...current, fileFront: (current as any).documentFront, fileBack: (current as any).documentBack },
+            }}
             onBack={prevStep}
             onSubmit={() => {
               const values = getValues();
-              console.log('Submitting KYC data', { ...values, fileFront, fileBack });
+              console.log('Submitting KYC data', {
+                ...values,
+                fileFront: (values as any).documentFront,
+                fileBack: (values as any).documentBack,
+              });
               alert('KYC enviado!');
             }}
           />

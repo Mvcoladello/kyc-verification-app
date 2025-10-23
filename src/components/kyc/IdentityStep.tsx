@@ -3,7 +3,7 @@ import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { FileUpload } from '../ui/FileUpload';
 import { Button } from '../ui/Button';
-import { useFormContext } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import type { DocumentInfo } from '../../hooks/useFormValidation';
 
 const documentTypeOptions = [
@@ -22,19 +22,15 @@ const issuingCountryOptions = [
 export interface IdentityStepProps {
   onBack?: () => void;
   onNext?: () => void;
-  fileFront?: File | null;
-  fileBack?: File | null;
-  setFileFront?: (f: File | null) => void;
-  setFileBack?: (f: File | null) => void;
 }
 
-export const IdentityStep = ({ onBack, onNext, fileFront, fileBack, setFileFront, setFileBack }: IdentityStepProps) => {
-  const { register, formState: { errors }, setValue, watch, trigger } = useFormContext();
+export const IdentityStep = ({ onBack, onNext }: IdentityStepProps) => {
+  const { register, formState: { errors }, setValue, watch, trigger, control } = useFormContext();
   const values = watch();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const ok = await trigger(['documentType', 'documentNumber', 'issuingCountry']);
+    const ok = await trigger(['documentType', 'documentNumber', 'issuingCountry', 'documentFront', 'documentBack']);
     if (ok) onNext?.();
   };
 
@@ -67,21 +63,37 @@ export const IdentityStep = ({ onBack, onNext, fileFront, fileBack, setFileFront
           fullWidth
           error={(errors as any)?.issuingCountry?.message}
         />
-        <FileUpload
-          label="Frente do documento"
-          accept=".pdf,.jpg,.jpeg,.png"
-          maxSizeMB={5}
-          onChange={setFileFront}
-          fullWidth
-          helperText={fileFront ? fileFront.name : undefined}
+        <Controller
+          name="documentFront"
+          control={control}
+          render={({ field, fieldState }) => (
+            <FileUpload
+              label="Frente do documento"
+              accept=".pdf,.jpg,.jpeg,.png"
+              maxSizeMB={5}
+              fullWidth
+              file={field.value as File | null}
+              onChange={(file) => field.onChange(file)}
+              error={fieldState.error?.message}
+              helperText={(field.value as File | null)?.name}
+            />
+          )}
         />
-        <FileUpload
-          label="Verso do documento"
-          accept=".pdf,.jpg,.jpeg,.png"
-          maxSizeMB={5}
-          onChange={setFileBack}
-          fullWidth
-          helperText={fileBack ? fileBack.name : undefined}
+        <Controller
+          name="documentBack"
+          control={control}
+          render={({ field, fieldState }) => (
+            <FileUpload
+              label="Verso do documento"
+              accept=".pdf,.jpg,.jpeg,.png"
+              maxSizeMB={5}
+              fullWidth
+              file={field.value as File | null}
+              onChange={(file) => field.onChange(file)}
+              error={fieldState.error?.message}
+              helperText={(field.value as File | null)?.name}
+            />
+          )}
         />
       </Card.Content>
       <Card.Footer>
