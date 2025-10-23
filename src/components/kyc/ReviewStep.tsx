@@ -6,6 +6,7 @@ export interface ReviewData {
   personal?: any;
   address?: any;
   document?: any;
+  allValues?: any;
 }
 
 export interface ReviewStepProps {
@@ -13,9 +14,10 @@ export interface ReviewStepProps {
   onBack?: () => void;
   onSubmit?: () => void;
   submitting?: boolean;
+  goToStep?: (index: number) => void;
 }
 
-export const ReviewStep = ({ data, onBack, onSubmit, submitting }: ReviewStepProps) => {
+export const ReviewStep = ({ data, onBack, onSubmit, submitting, goToStep }: ReviewStepProps) => {
   return (
     <Card variant="elevated" padding="large">
       <Card.Header>
@@ -24,13 +26,35 @@ export const ReviewStep = ({ data, onBack, onSubmit, submitting }: ReviewStepPro
       </Card.Header>
       <Card.Content>
         {data ? (
-          <div>
-            <Typography variant="h4" gutterBottom>Dados Pessoais</Typography>
-            <Typography variant="body2" color="textSecondary">{JSON.stringify(data.personal, null, 2)}</Typography>
-            <Typography variant="h4" gutterBottom style={{ marginTop: 12 }}>Endereço</Typography>
-            <Typography variant="body2" color="textSecondary">{JSON.stringify(data.address, null, 2)}</Typography>
-            <Typography variant="h4" gutterBottom style={{ marginTop: 12 }}>Documento</Typography>
-            <Typography variant="body2" color="textSecondary">{JSON.stringify({ ...data.document, fileFront: !!data.document?.fileFront, fileBack: !!data.document?.fileBack }, null, 2)}</Typography>
+          <div style={{ display: 'grid', gap: 16 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Typography variant="h4" gutterBottom>Dados Pessoais</Typography>
+                <Button type="button" variant="secondary" onClick={() => goToStep?.(0)}>Editar</Button>
+              </div>
+              <Typography variant="body2" color="textSecondary">{JSON.stringify(data.personal, null, 2)}</Typography>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Typography variant="h4" gutterBottom>Endereço</Typography>
+                <Button type="button" variant="secondary" onClick={() => goToStep?.(1)}>Editar</Button>
+              </div>
+              <Typography variant="body2" color="textSecondary">{JSON.stringify(data.address, null, 2)}</Typography>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Typography variant="h4" gutterBottom>Documento</Typography>
+                <Button type="button" variant="secondary" onClick={() => goToStep?.(2)}>Editar</Button>
+              </div>
+              <Typography variant="body2" color="textSecondary">{JSON.stringify({ ...data.document, fileFront: !!data.document?.fileFront, fileBack: !!data.document?.fileBack }, null, 2)}</Typography>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Typography variant="h4" gutterBottom>Selfie</Typography>
+                <Button type="button" variant="secondary" onClick={() => goToStep?.(3)}>Editar</Button>
+              </div>
+              <Typography variant="body2" color="textSecondary">{JSON.stringify({ hasSelfie: !!(data.allValues?.selfie) }, null, 2)}</Typography>
+            </div>
           </div>
         ) : (
           <Typography variant="body2" color="textSecondary">

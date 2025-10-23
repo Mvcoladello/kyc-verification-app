@@ -44,7 +44,7 @@ export const KYCForm = () => {
   });
   const { getValues } = methods;
 
-  const { currentStep, nextStep, prevStep, progress, currentStepIndex } = useMultiStepForm(stepsConfig);
+  const { currentStep, nextStep, prevStep, progress, currentStepIndex, goToStep } = useMultiStepForm(stepsConfig);
   const { success, error } = useToast();
   const [submitting, setSubmitting] = useState(false);
 
@@ -98,10 +98,12 @@ export const KYCForm = () => {
               personal: current,
               address: current,
               document: { ...current, fileFront: (current as any).documentFront, fileBack: (current as any).documentBack },
+              allValues: current,
             }}
             onBack={prevStep}
             onSubmit={handleSubmitAll}
             submitting={submitting}
+            goToStep={goToStep}
           />
         );
       }

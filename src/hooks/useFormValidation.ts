@@ -34,6 +34,15 @@ const isAdult = (dateStr: string) => {
 
 const cepRegex = /^\d{5}-?\d{3}$/; // 00000-000 or 00000000
 
+// Shared file schema and rules
+const acceptedMimes = ['application/pdf', 'image/jpeg', 'image/png'];
+const maxSizeBytes = 5 * 1024 * 1024; // 5 MB
+
+const fileSchema = z
+  .instanceof(File, { message: 'Arquivo é obrigatório' })
+  .refine((f) => acceptedMimes.includes(f.type), 'Tipo de arquivo não permitido')
+  .refine((f) => f.size <= maxSizeBytes, 'O arquivo deve ter no máximo 5MB');
+
 // Passo 1: Dados Pessoais
 export const personalInfoSchema = z.object({
   fullName: z.string().trim().min(3, 'Informe seu nome completo'),
@@ -61,15 +70,6 @@ export const addressSchema = z.object({
 });
 
 // Passo 3: Documento (dados textuais + arquivos)
-const acceptedMimes = ['application/pdf', 'image/jpeg', 'image/png'];
-const maxSizeBytes = 5 * 1024 * 1024; // 5 MB
-
-const fileSchema = z
-  // z.instanceof(File) is available in DOM environments
-  .instanceof(File, { message: 'Arquivo é obrigatório' })
-  .refine((f) => acceptedMimes.includes(f.type), 'Tipo de arquivo não permitido')
-  .refine((f) => f.size <= maxSizeBytes, 'O arquivo deve ter no máximo 5MB');
-
 export const documentSchema = z.object({
   documentType: z.enum(['rg', 'cnh', 'passport']),
   documentNumber: z.string().trim().min(5, 'Número do documento inválido'),
@@ -78,10 +78,16 @@ export const documentSchema = z.object({
   documentBack: fileSchema,
 });
 
+// Passo 4: Selfie (opcional por enquanto)
+export const selfieSchema = z.object({
+  selfie: fileSchema.optional(),
+});
+
 export const stepSchemas = {
   personal: personalInfoSchema,
   address: addressSchema,
   document: documentSchema,
+  selfie: selfieSchema,
 } as const;
 
 export type StepKey = keyof typeof stepSchemas;
@@ -91,7 +97,7 @@ export type AddressInfo = z.infer<typeof addressSchema>;
 export type DocumentInfo = z.infer<typeof documentSchema>;
 
 // Combined schema for whole form
-export const fullFormSchema = personalInfoSchema.merge(addressSchema).merge(documentSchema);
+export const fullFormSchema = personalInfoSchema.merge(addressSchema).merge(documentSchema).merge(selfieSchema);
 export type FullFormValues = z.infer<typeof fullFormSchema>;
 
 // Helper types to map step -> form values
